@@ -1,0 +1,40 @@
+gray:
+  #启动时根据该注解做自动装配 或者
+  enable: true
+  #灰度开关 open 开启
+  switch: open
+  #灰度模式，distribute 分发, forward 转发 默认 distribute
+  model: distribute
+  #gateway 灰度转发 优先级： gateway > nacos
+  gray-gateway:
+  #nacos-server 灰度转发
+  gray-nacos:
+    addr: localhost:8848
+    namespace: gray
+    group: test
+    # metadata:
+    #     activity: gray
+    #     vsersion: v3
+  simple-tag:
+    # - '*'
+    - path: 'order.*'
+      proportion: 10%
+    - path: '/user/*'
+      proportion: 100%
+  first-tag:
+    #灰度first-tag 不配置则不启用
+    order:
+      #是否启用灰度测试
+      open: true
+      #灰度规则 : random(随机) ，orderly(有序)，specific(指定)
+      rule: random
+      # rule 为 specific时配置生效
+      specific-value:
+        - o1
+        - o2
+      #灰度比例
+      proportion: 10%
+      #灰度tag 缓存前缀，默认gray_{tag}:
+      prefix: gray_order
+      #灰度tag 缓存时间，不配置默认缓存7天
+      cache-time: 1000
