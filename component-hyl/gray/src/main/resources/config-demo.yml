@@ -17,7 +17,7 @@ gray:
     #     vsersion: v3
   simple-tag:
     # - '*'
-    - path: 'order.*'
+    - path: '/order/*'
       proportion: 10%
     - path: '/user/*'
       proportion: 100%
