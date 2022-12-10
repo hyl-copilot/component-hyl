@@ -7,7 +7,8 @@ import java.util.function.Function;
 /**
  * 2022-12-10 12:58
  * create by hyl
- * desc:
+ * desc: 字符拼接工具类
+ * 多用于stream::groupBy key创建分组key
  */
 public final class JoinOptional<T> {
 
