@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>gray</module>
+        <module>common-util</module>
     </modules>
 
     <properties>
