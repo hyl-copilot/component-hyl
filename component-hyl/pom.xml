@@ -11,6 +11,7 @@
     <modules>
         <module>gray-starter</module>
         <module>common-util</module>
+        <module>out-api</module>
     </modules>
 
     <properties>

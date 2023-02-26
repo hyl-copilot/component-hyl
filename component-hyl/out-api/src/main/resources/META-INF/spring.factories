@@ -1,0 +1,1 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration = \com.hyl.component.out_api.autoconfigure.MatchConfiguration
