@@ -1,6 +1,7 @@
 package com.hyl.component.out_api.adapter;
 
 import cn.hutool.core.map.MapUtil;
+import com.hyl.component.out_api.exception.NotFoundFunc;
 import com.hyl.component.out_api.vo.ApiAdapterFunc;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -106,10 +107,10 @@ public class ApiAdapterManager {
     public Function getFunc(String adapter, String func) {
         ApiAdapterFunc apiAdapterFunc = adapterMap.get(adapter);
         if (Objects.isNull(apiAdapterFunc)) {
-            throw new RuntimeException("adapter:【" + adapter + "】not find");
+            throw new NotFoundFunc("adapter:【" + adapter + "】not found");
         }
         if (MapUtil.isEmpty(apiAdapterFunc.getApiFunc()) || !apiAdapterFunc.getApiFunc().containsKey(func)) {
-            throw new RuntimeException("func:【" + func + "】not find in adapter:【" + adapter + "】");
+            throw new NotFoundFunc("func:【" + func + "】not found in adapter:【" + adapter + "】");
         }
         return apiAdapterFunc.getApiFunc().get(func);
     }
