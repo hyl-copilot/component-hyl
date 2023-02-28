@@ -44,7 +44,7 @@ public class ApiAdapterManager {
     private String getAdapterName(ApiAdapterServiceI adapterServiceI) {
         ApiAdapter adapter = adapterServiceI.getClass().getAnnotation(ApiAdapter.class);
         if (Objects.isNull(adapter)) {
-            throw new RuntimeException(adapterServiceI.getClass().getSimpleName() + "请使用@ApiAdapter注解");
+            throw new RuntimeException("请使用@ApiAdapter注解【" + adapterServiceI.getClass().getName() + "】");
         }
         return adapter.adapter();
     }
@@ -58,47 +58,59 @@ public class ApiAdapterManager {
 
     /**
      * 注册适配器
+     *
      * @param adapterName 适配器名称
-     * @param funcName 方法名称
-     * @param func 方法体
+     * @param funcName    方法名称
+     * @param func        方法体
      */
-    public void registerAdapter(String adapterName, String funcName,Function func) {
+    public void registerAdapter(String adapterName, String funcName, Function func) {
         ApiAdapterFunc apiAdapterFunc = adapterMap.get(adapterName);
-        if (Objects.isNull(apiAdapterFunc)){
+        if (Objects.isNull(apiAdapterFunc)) {
             apiAdapterFunc = ApiAdapterFunc.builder()
                     .name(adapterName)
                     .build();
         }
         Map<String, Function> apiFunc = apiAdapterFunc.getApiFunc();
-        if (Objects.isNull(apiFunc)){
+        if (Objects.isNull(apiFunc)) {
             apiFunc = new HashMap<>();
         }
-        if (apiFunc.containsKey(funcName)){
-            throw new RuntimeException("adapter【"+adapterName+"】func【"+funcName+"】existed");
+        if (apiFunc.containsKey(funcName)) {
+            throw new RuntimeException("adapter【" + adapterName + "】func【" + funcName + "】existed");
         }
-        apiFunc.put(funcName,func);
+        apiFunc.put(funcName, func);
         apiAdapterFunc.setApiFunc(apiFunc);
-        adapterMap.put(adapterName,apiAdapterFunc);
+        adapterMap.put(adapterName, apiAdapterFunc);
     }
 
     /**
      * 执行适配器方法
+     *
      * @param adapter
      * @param func
      * @param t
-     * @return
      * @param <T>
      * @param <R>
+     * @return
      */
-    public <T,R> R apply(String adapter,String func, T t){
+    public <T, R> R apply(String adapter, String func, T t) {
+        return (R) getFunc(adapter, func).apply(t);
+    }
+
+    /**
+     * 获取方法
+     *
+     * @param adapter
+     * @param func
+     * @return
+     */
+    public Function getFunc(String adapter, String func) {
         ApiAdapterFunc apiAdapterFunc = adapterMap.get(adapter);
-        if (Objects.isNull(apiAdapterFunc)){
-            throw new RuntimeException("adapter:【"+adapter+"】not find");
+        if (Objects.isNull(apiAdapterFunc)) {
+            throw new RuntimeException("adapter:【" + adapter + "】not find");
         }
-        if (MapUtil.isEmpty(apiAdapterFunc.getApiFunc()) || !apiAdapterFunc.getApiFunc().containsKey(func)){
-            throw new RuntimeException("func:【"+func+"】not find in adapter:【"+adapter+"】");
+        if (MapUtil.isEmpty(apiAdapterFunc.getApiFunc()) || !apiAdapterFunc.getApiFunc().containsKey(func)) {
+            throw new RuntimeException("func:【" + func + "】not find in adapter:【" + adapter + "】");
         }
-        Function function = apiAdapterFunc.getApiFunc().get(func);
-        return (R) function.apply(t);
+        return apiAdapterFunc.getApiFunc().get(func);
     }
 }
