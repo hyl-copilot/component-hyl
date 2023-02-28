@@ -1,4 +1,4 @@
-package com.hyl.component.out_api.util;
+package com.hyl.component.util.annotation;
 
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ReflectUtil;

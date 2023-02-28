@@ -16,7 +16,6 @@ import javax.annotation.PostConstruct;
 @ConditionalOnProperty(prefix = "api_match", name = "enable", havingValue = "true")
 public class MatchConfiguration {
 
-
     @PostConstruct
     public void init(){
         log.info("out_api init...");
