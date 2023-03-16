@@ -1,13 +1,13 @@
-package com.hyl.component.out_api.service.impl;
+package com.hyl.component.api.service.impl;
 
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.hyl.component.out_api.routing.ApiRoutingMatch;
-import com.hyl.component.out_api.routing.ApiRoutingServiceI;
-import com.hyl.component.out_api.service.MatchService;
-import com.hyl.component.out_api.vo.BeanMethod;
+import com.hyl.component.api.routing.ApiRoutingMatch;
+import com.hyl.component.api.routing.ApiRoutingServiceI;
+import com.hyl.component.api.service.MatchService;
+import com.hyl.component.api.vo.BeanMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -19,11 +19,14 @@ import java.util.Map;
 import java.util.Objects;
 
 
+/**
+ * @author hyl
+ */
 @Slf4j
 @Service
 public class MatchServiceImpl implements MatchService {
 
-    private final static Map<String,BeanMethod> routeCache = new HashMap<>();
+    private final static Map<String,BeanMethod> ROUTE_CACHE = new HashMap<>();
 
     @Resource
     private ApplicationContext applicationContext;
@@ -31,12 +34,12 @@ public class MatchServiceImpl implements MatchService {
 
     private BeanMethod getRouteMethod(String route,String key) {
         String cacheKey = route+">"+ key;
-        if (routeCache.containsKey(cacheKey)){
-            return routeCache.get(cacheKey);
+        if (ROUTE_CACHE.containsKey(cacheKey)){
+            return ROUTE_CACHE.get(cacheKey);
         }
         Map<String, ApiRoutingServiceI> routeBeanMap = applicationContext.getBeansOfType(ApiRoutingServiceI.class);
         if (MapUtil.isEmpty(routeBeanMap)) {
-            routeCache.put(cacheKey,null);
+            ROUTE_CACHE.put(cacheKey,null);
             return null;
         }
         //查询所有类中所有含有@ApiRoutingMatch注解的方法
@@ -53,11 +56,11 @@ public class MatchServiceImpl implements MatchService {
                         .bean(serviceI)
                         .method(methods[0])
                         .build();
-                routeCache.put(cacheKey,beanMethod);
+                ROUTE_CACHE.put(cacheKey,beanMethod);
                 return beanMethod;
             }
         }
-        routeCache.put(cacheKey,null);
+        ROUTE_CACHE.put(cacheKey,null);
         return null;
     }
 

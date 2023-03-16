@@ -1,23 +1,27 @@
 package com.hyl.component.gray.util;
 
 
+import cn.hutool.core.text.CharPool;
 import cn.hutool.core.util.StrUtil;
 
 /**
  * 2022-12-04 03:32
  * create by hyl
  * desc:
+ * @author hyl
  */
 public class MatchUtil {
+
+    private static final String PERCENT_SIGN = "%";
 
     public static double getProportion(String proportion) {
         if (StrUtil.isEmpty(proportion)) {
             return 0;
         }
-        double step = 0;
+        double step;
         try {
-            if (proportion.endsWith("%")) {
-                step = Double.parseDouble(proportion.replace("%", "")) / 100;
+            if (proportion.endsWith(PERCENT_SIGN)) {
+                step = Double.parseDouble(proportion.replace(PERCENT_SIGN, "")) / 100;
             } else {
                 step = Double.parseDouble(proportion);
             }
@@ -30,11 +34,9 @@ public class MatchUtil {
 
     /**
      * 判断str字符串是否能够被regex匹配
-     * 如a*b?d可以匹配aAAAbcd
-     *
      * @param str   任意字符串
      * @param regex 包含*或？的匹配表达式
-     * @return
+     * @return 是否匹配
      */
     public static boolean isMatch(String str, String regex) {
         return isMatch(str, regex, false);
@@ -42,12 +44,10 @@ public class MatchUtil {
 
     /**
      * 判断str字符串是否能够被regex匹配
-     * 如a*b?d可以匹配aAAAbcd
-     *
      * @param str        任意字符串
      * @param regex      包含*或？的匹配表达式
      * @param ignoreCase 大小写敏感
-     * @return
+     * @return 是否匹配
      */
     public static boolean isMatch(String str, String regex, boolean ignoreCase) {
         if (str == null || regex == null) {
@@ -57,34 +57,45 @@ public class MatchUtil {
             str = str.toLowerCase();
             regex = regex.toLowerCase();
         }
-        return matches(str, regex.replaceAll("(^|([^\\\\]))[\\*]{2,}", "$2*"));// 去除多余*号
+        // 去除多余*号
+        return matches(str, regex.replaceAll("(^|([^\\\\]))\\*{2,}", "$2*"));
     }
 
     private static boolean matches(String str, String regex) {
         // 如果str与regex完全相等，且str不包含反斜杠，则返回true。
-        if (str.equals(regex) && str.indexOf('\\') < 0) {
+        if (str.equals(regex) && !str.contains(CharPool.BACKSLASH + "")) {
             return true;
         }
-        int rIdx = 0, sIdx = 0;// 同时遍历源字符串与匹配表达式
+        int rIdx = 0, sIdx = 0;
+        // 同时遍历源字符串与匹配表达式
         while (rIdx < regex.length() && sIdx < str.length()) {
-            char c = regex.charAt(rIdx);// 以匹配表达式为主导
+            // 以匹配表达式为主导
+            char c = regex.charAt(rIdx);
             switch (c) {
-                case '*':// 匹配到*号进入下一层递归
-                    String tempSource = str.substring(sIdx);// 去除前面已经完全匹配的前缀
-                    String tempRegex = regex.substring(rIdx + 1);// 从星号后一位开始认为是新的匹配表达式
-                    for (int j = 0; j <= tempSource.length(); j++) {// 此处等号不能缺，如（ABCD，*），等号能达成("", *)条件
-                        if (matches(tempSource.substring(j), tempRegex)) {// 很普通的递归思路
+                case '*':
+                    // 匹配到*号进入下一层递归
+                    String tempSource = str.substring(sIdx);
+                    // 去除前面已经完全匹配的前缀
+                    String tempRegex = regex.substring(rIdx + 1);
+                    // 从星号后一位开始认为是新的匹配表达式
+                    for (int j = 0; j <= tempSource.length(); j++) {
+                        // 此处等号不能缺，如（ABED，*），等号能达成("", *)条件
+                        if (matches(tempSource.substring(j), tempRegex)) {
+                            // 很普通的递归思路
                             return true;
                         }
                     }
-                    return false;// 排除所有潜在可能性，则返回false
+                    // 排除所有潜在可能性，则返回false
+                    return false;
                 case '?':
                     break;
-                case '\\':// 匹配到反斜杠跳过一位，匹配下一个字符串
+                case '\\':
+                    // 匹配到反斜杠跳过一位，匹配下一个字符串
                     c = regex.charAt(++rIdx);
                 default:
                     if (str.charAt(sIdx) != c) {
-                        return false;// 普通字符的匹配
+                        // 普通字符的匹配
+                        return false;
                     }
             }
             rIdx++;

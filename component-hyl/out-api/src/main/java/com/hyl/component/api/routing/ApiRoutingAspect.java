@@ -1,8 +1,8 @@
-package com.hyl.component.out_api.routing;
+package com.hyl.component.api.routing;
 
-import com.hyl.component.out_api.autoconfigure.MatchConfiguration;
-import com.hyl.component.out_api.service.MatchService;
-import com.hyl.component.out_api.util.AnnotationUtil;
+import com.hyl.component.api.autoconfigure.MatchConfiguration;
+import com.hyl.component.api.service.MatchService;
+import com.hyl.component.api.util.AnnotationUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -14,6 +14,9 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.Objects;
 
+/**
+ * @author hyl
+ */
 @Slf4j
 @Aspect
 @Component
@@ -23,8 +26,10 @@ public class ApiRoutingAspect {
     @Resource
     private MatchService matchService;
 
-    // 1.定义切面
-    @Pointcut("@annotation(com.hyl.component.out_api.routing.ApiRouting)")
+    /**
+     * 1.定义切面
+     */
+    @Pointcut("@annotation(com.hyl.component.api.routing.ApiRouting)")
     public void pointCut() {
     }
 

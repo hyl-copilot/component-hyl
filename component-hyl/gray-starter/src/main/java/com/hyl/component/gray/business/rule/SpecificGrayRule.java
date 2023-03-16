@@ -11,9 +11,10 @@ import java.util.Set;
  * 2022-12-04 02:22
  * create by hyl
  * desc: 指定
+ * @author hyl
  */
 @Component("specific")
-public class SpecificGrayRule extends GrayRule {
+public class SpecificGrayRule extends AbstractGrayRule {
 
     @Override
     public boolean matchingRule(String grayTag, String grayValue) {

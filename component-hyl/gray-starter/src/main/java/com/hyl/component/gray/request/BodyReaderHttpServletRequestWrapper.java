@@ -10,6 +10,7 @@ import java.io.*;
  * 2022-12-02 00:55
  * create by hyl
  * desc:
+ * @author hyl
  */
 public class BodyReaderHttpServletRequestWrapper extends HttpServletRequestWrapper {
 
@@ -17,20 +18,19 @@ public class BodyReaderHttpServletRequestWrapper extends HttpServletRequestWrapp
 
     public BodyReaderHttpServletRequestWrapper(HttpServletRequest request) throws IOException {
         super(request);
-        try (BufferedInputStream bis = new BufferedInputStream(request.getInputStream()); ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try (BufferedInputStream bis = new BufferedInputStream(request.getInputStream());
+             ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[1024];
             int len;
             while ((len = bis.read(buffer)) > 0) {
-                baos.write(buffer, 0, len);
+                bos.write(buffer, 0, len);
             }
-            bytes = baos.toByteArray();
-        } catch (IOException ex) {
-            throw ex;
+            bytes = bos.toByteArray();
         }
     }
 
     @Override
-    public ServletInputStream getInputStream() throws IOException {
+    public ServletInputStream getInputStream() {
         final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
         return new ServletInputStream() {
             @Override

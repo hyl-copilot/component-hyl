@@ -8,17 +8,20 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.servlet.Filter;
 
+/**
+ * @author hyl
+ */
 @Configuration
 @ConditionalOnClass(GrayConfigProperties.class)
 public class WebAuthFilterConfig {
 
+    @SuppressWarnings("unchecked")
     @Bean
     public FilterRegistrationBean webAuthFilterRegistration() {
         FilterRegistrationBean registration = new FilterRegistrationBean();
         registration.setFilter(bodyFilter());
         registration.setName("bodyFilter");
         registration.addUrlPatterns("/*");
-//        registration.addInitParameter("excludeUrls", "/web/login");
         registration.setOrder(0);
         return registration;
     }

@@ -7,9 +7,10 @@ import org.springframework.stereotype.Component;
  * 2022-12-04 02:22
  * create by hyl
  * desc: 随机
+ * @author hyl
  */
 @Component("random")
-public class RandomGrayRule extends GrayRule {
+public class RandomGrayRule extends AbstractGrayRule {
 
     @Override
     public boolean matchingRule(String grayTag, String grayValue) {

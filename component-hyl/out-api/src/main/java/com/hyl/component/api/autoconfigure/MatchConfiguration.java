@@ -1,4 +1,4 @@
-package com.hyl.component.out_api.autoconfigure;
+package com.hyl.component.api.autoconfigure;
 
 
 import lombok.extern.slf4j.Slf4j;
@@ -9,10 +9,13 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 import javax.annotation.PostConstruct;
 
+/**
+ * @author hyl
+ */
 @Configuration
 @Slf4j
 @EnableAspectJAutoProxy
-@ComponentScan("com.hyl.component.out_api")
+@ComponentScan("com.hyl.component.api")
 @ConditionalOnProperty(prefix = "api_match", name = "enable", havingValue = "true")
 public class MatchConfiguration {
 

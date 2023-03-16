@@ -10,8 +10,9 @@ import java.util.Map;
  * 2022-12-04 02:21
  * create by hyl
  * desc: 路由规则
+ * @author hyl
  */
-public abstract class GrayRule {
+public abstract class AbstractGrayRule {
 
     @Autowired
     protected GrayConfigProperties grayConfigProperties;
@@ -26,9 +27,6 @@ public abstract class GrayRule {
      */
     public boolean matchingRule(String grayTag, String grayValue) {
         Map<String, GrayConfigProperties.FirsTagConfig> firstTag = grayConfigProperties.getFirstTag();
-        if (MapUtil.isEmpty(firstTag) || !firstTag.containsKey(grayTag)) {
-            return false;
-        }
-        return true;
+        return !MapUtil.isEmpty(firstTag) && firstTag.containsKey(grayTag);
     }
 }

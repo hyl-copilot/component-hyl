@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
  * 2022-12-02 00:06
  * create by hyl
  * desc:
+ * @author hyl
  */
 @Component
 @Slf4j
@@ -34,12 +35,11 @@ public class NacosClientService {
     @Value("${spring.application.name}")
     private String serviceId;
 
-    private static List<ServiceInstance> grayServices = new ArrayList<>();;
+    private static List<ServiceInstance> grayServices = new ArrayList<>();
 
 
     /**
      * 订阅 gary 服务列表
-     * @return
      */
     @PostConstruct
     public void subscribeGrayServer(){

@@ -20,6 +20,7 @@ import java.util.Set;
  * 2022-12-01 21:15
  * create by hyl
  * desc:
+ * @author hyl
  */
 
 @Slf4j
@@ -31,7 +32,9 @@ public class FirstGrayAspect extends BaseGrayAspect {
     @Autowired
     private GrayRuleFactory grayRuleFactory;
 
-    // 1.定义切面
+    /**
+     * 1.定义切面
+     */
     @Pointcut("@annotation(com.hyl.component.gray.business.annotation.FirstGray)")
     public void pointCut() {
     }

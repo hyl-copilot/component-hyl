@@ -7,7 +7,6 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.hyl.component.gray.business.annotation.DistributionGray;
-import com.hyl.component.gray.business.cache.DataCache;
 import com.hyl.component.gray.config.GrayConfigProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;

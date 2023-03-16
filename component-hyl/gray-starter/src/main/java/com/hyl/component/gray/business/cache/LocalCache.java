@@ -10,40 +10,41 @@ import java.util.*;
  * 2022-12-04 23:23
  * create by hyl
  * desc:
+ * @author hyl
  */
 
 @Component
-public class LocalCache extends DataCache {
-    public static Map<String, Set<String>> grayTagData = new HashMap<>();
+public class LocalCache extends AbstractDataCache {
+    public static final Map<String, Set<String>> GRAY_TAG_DATA = new HashMap<>();
 
     @Override
     public boolean hasGrayTag() {
-        return MapUtil.isNotEmpty(grayTagData);
+        return MapUtil.isNotEmpty(GRAY_TAG_DATA);
     }
 
     @Override
     public boolean isGrayLink(String grayTag, String tagValue) {
-        Set<String> links = grayTagData.get(grayTag);
+        Set<String> links = GRAY_TAG_DATA.get(grayTag);
         return CollUtil.isNotEmpty(links) && links.contains(tagValue);
     }
 
     @Override
     public void cacheGrayLink(String grayTag, String tagValue) {
-        Set<String> links = grayTagData.get(grayTag);
+        Set<String> links = GRAY_TAG_DATA.get(grayTag);
         if (Objects.isNull(links)){
             links = new HashSet<>();
         }
         links.add(tagValue);
-        grayTagData.put(grayTag, links);
+        GRAY_TAG_DATA.put(grayTag, links);
     }
 
     @Override
     public Set<String> getGrayLink(String grayTag) {
-        return grayTagData.get(grayTag);
+        return GRAY_TAG_DATA.get(grayTag);
     }
 
     @Override
     public Map<String, Set<String>> getAllGrayLink() {
-        return grayTagData;
+        return GRAY_TAG_DATA;
     }
 }

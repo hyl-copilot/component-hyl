@@ -1,8 +1,8 @@
-package com.hyl.component.out_api.adapter;
+package com.hyl.component.api.adapter;
 
 import cn.hutool.core.map.MapUtil;
-import com.hyl.component.out_api.exception.NotFoundFunc;
-import com.hyl.component.out_api.vo.ApiAdapterFunc;
+import com.hyl.component.api.exception.NotFoundFuncException;
+import com.hyl.component.api.vo.ApiAdapterFunc;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -15,12 +15,16 @@ import java.util.Objects;
 import java.util.function.Function;
 
 
+/**
+ * @author hyl
+ */
+@SuppressWarnings("unchecked")
 @Component
 @Slf4j
 public class ApiAdapterManager {
 
 
-    private static final Map<String, ApiAdapterFunc> adapterMap = new HashMap<>();
+    private static final Map<String, ApiAdapterFunc> ADAPTER_MAP = new HashMap<>();
 
     @Resource
     private ApplicationContext applicationContext;
@@ -38,7 +42,7 @@ public class ApiAdapterManager {
             if (MapUtil.isEmpty(func)) {
                 return;
             }
-            adapterMap.put(adapterName, this.buildApiFunc(adapterName, func));
+            ADAPTER_MAP.put(adapterName, this.buildApiFunc(adapterName, func));
         });
     }
 
@@ -65,7 +69,7 @@ public class ApiAdapterManager {
      * @param func        方法体
      */
     public void registerAdapter(String adapterName, String funcName, Function func) {
-        ApiAdapterFunc apiAdapterFunc = adapterMap.get(adapterName);
+        ApiAdapterFunc apiAdapterFunc = ADAPTER_MAP.get(adapterName);
         if (Objects.isNull(apiAdapterFunc)) {
             apiAdapterFunc = ApiAdapterFunc.builder()
                     .name(adapterName)
@@ -73,25 +77,25 @@ public class ApiAdapterManager {
         }
         Map<String, Function> apiFunc = apiAdapterFunc.getApiFunc();
         if (Objects.isNull(apiFunc)) {
-            apiFunc = new HashMap<>();
+            apiFunc = new HashMap<>(Integer.SIZE);
         }
         if (apiFunc.containsKey(funcName)) {
             throw new RuntimeException("adapter【" + adapterName + "】func【" + funcName + "】existed");
         }
         apiFunc.put(funcName, func);
         apiAdapterFunc.setApiFunc(apiFunc);
-        adapterMap.put(adapterName, apiAdapterFunc);
+        ADAPTER_MAP.put(adapterName, apiAdapterFunc);
     }
 
     /**
      * 执行适配器方法
      *
-     * @param adapter
-     * @param func
-     * @param t
-     * @param <T>
-     * @param <R>
-     * @return
+     * @param adapter 适配器名称
+     * @param func 方法名
+     * @param t 入参
+     * @param <T> 入参类型
+     * @param <R> 回参类型
+     * @return 执行结果
      */
     public <T, R> R apply(String adapter, String func, T t) {
         return (R) getFunc(adapter, func).apply(t);
@@ -100,17 +104,17 @@ public class ApiAdapterManager {
     /**
      * 获取方法
      *
-     * @param adapter
-     * @param func
-     * @return
+     * @param adapter 适配器名称
+     * @param func 方法名
+     * @return 方法函数
      */
     public Function getFunc(String adapter, String func) {
-        ApiAdapterFunc apiAdapterFunc = adapterMap.get(adapter);
+        ApiAdapterFunc apiAdapterFunc = ADAPTER_MAP.get(adapter);
         if (Objects.isNull(apiAdapterFunc)) {
-            throw new NotFoundFunc("adapter:【" + adapter + "】not found");
+            throw new NotFoundFuncException("adapter:【" + adapter + "】not found");
         }
         if (MapUtil.isEmpty(apiAdapterFunc.getApiFunc()) || !apiAdapterFunc.getApiFunc().containsKey(func)) {
-            throw new NotFoundFunc("func:【" + func + "】not found in adapter:【" + adapter + "】");
+            throw new NotFoundFuncException("func:【" + func + "】not found in adapter:【" + adapter + "】");
         }
         return apiAdapterFunc.getApiFunc().get(func);
     }

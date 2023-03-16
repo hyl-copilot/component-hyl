@@ -5,7 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.hyl.component.gray.business.aspect.BaseGrayAspect;
 import com.hyl.component.gray.config.GrayConfigProperties;
 import com.hyl.component.gray.simple.annotation.SimpleGray;
-import com.hyl.component.gray.simple.rule.SimpleGrayRule;
+import com.hyl.component.gray.simple.rule.AbstractSimpleGrayRule;
 import com.hyl.component.gray.util.MatchUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -16,13 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 /**
  * 2022-12-04 03:22
  * create by hyl
  * desc:
+ * @author hyl
  */
 @Slf4j
 @Aspect
@@ -31,9 +31,11 @@ import javax.servlet.http.HttpServletRequest;
 public class SimpleGrayAspect extends BaseGrayAspect {
 
     @Autowired
-    private SimpleGrayRule simpleGrayRule;
+    private AbstractSimpleGrayRule simpleGrayRule;
 
-    // 1.定义切面
+    /**
+     * 1.定义切面
+     */
     @Pointcut("@annotation(com.hyl.component.gray.simple.annotation.SimpleGray)")
     public void pointCut() {
     }

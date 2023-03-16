@@ -1,4 +1,4 @@
-package com.hyl.component.out_api.vo;
+package com.hyl.component.api.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.lang.reflect.Method;
 
+/**
+ * @author hyl
+ */
 @Data
 @Builder
 @NoArgsConstructor

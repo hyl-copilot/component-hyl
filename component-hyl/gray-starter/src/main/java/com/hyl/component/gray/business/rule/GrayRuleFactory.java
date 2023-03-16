@@ -14,15 +14,16 @@ import java.util.stream.Collectors;
  * 2022-12-04 02:53
  * create by hyl
  * desc:
+ * @author hyl
  */
 @Component
 @Slf4j
 public class GrayRuleFactory {
 
-    private final Map<String, GrayRule> grayRules;
+    private final Map<String, AbstractGrayRule> grayRules;
 
     @Autowired
-    public GrayRuleFactory(List<GrayRule> grayRules) {
+    public GrayRuleFactory(List<AbstractGrayRule> grayRules) {
         if (CollUtil.isEmpty(grayRules)) {
             this.grayRules = new HashMap<>();
             return;
@@ -35,7 +36,7 @@ public class GrayRuleFactory {
     }
 
     public boolean matchingRule(String rule, String grayTag, String grayValue) {
-        GrayRule grayRule = grayRules.get(rule);
+        AbstractGrayRule grayRule = grayRules.get(rule);
         if (Objects.isNull(grayRule)) {
             return false;
         }

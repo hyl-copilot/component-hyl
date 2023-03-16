@@ -9,6 +9,7 @@ import java.util.function.Function;
  * create by hyl
  * desc: 字符拼接工具类
  * 多用于stream::groupBy key创建分组key
+ * @author hyl
  */
 public final class JoinOptional<T> {
 

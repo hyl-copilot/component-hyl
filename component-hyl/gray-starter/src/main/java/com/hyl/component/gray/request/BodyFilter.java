@@ -8,12 +8,12 @@ import java.io.IOException;
  * 2022-12-02 01:02
  * create by hyl
  * desc:
+ * @author hyl
  */
-//@WebFilter(filterName = "httpServletRequestWrapperFilter", urlPatterns = "/*")
 public class BodyFilter implements Filter {
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    public void init(FilterConfig filterConfig) {
     }
 
     @Override

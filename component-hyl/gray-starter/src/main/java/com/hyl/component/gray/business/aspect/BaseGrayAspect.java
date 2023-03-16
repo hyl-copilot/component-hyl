@@ -2,12 +2,13 @@ package com.hyl.component.gray.business.aspect;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.text.CharPool;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import com.hyl.component.gray.business.cache.DataCache;
+import com.hyl.component.gray.business.cache.AbstractDataCache;
 import com.hyl.component.gray.config.GrayConfigProperties;
 import com.hyl.component.gray.config.NacosClientService;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ import java.util.Set;
  * 2022-12-02 01:59
  * create by hyl
  * desc:
+ * @author hyl
  */
 
 @Slf4j
@@ -44,15 +46,15 @@ public abstract class BaseGrayAspect {
     protected NacosClientService nacosClientService;
 
     @Autowired
-    protected DataCache dataCache;
+    protected AbstractDataCache dataCache;
 
 
     /**
      * 灰度路由转发
      *
-     * @param joinPoint
-     * @param gray
-     * @return
+     * @param joinPoint 切点
+     * @param gray 灰度标签
+     * @return 返回结果
      * @throws Throwable
      */
     protected <T> Object distributionGrayRequest(ProceedingJoinPoint joinPoint, T gray) throws Throwable {
@@ -85,12 +87,18 @@ public abstract class BaseGrayAspect {
         return true;
     }
 
+    /**
+     * 成功后执行
+     * @param gray 灰度标签
+     * @param body 执行参数
+     * @param <T> 返回参数类型
+     */
     public abstract <T> void afterSuccess(T gray, String body);
 
 
     protected Set<String> getTagValues(String grayTag, String jsonPath, String body) {
         Set<String> tagSet = new HashSet<>();
-        if (body.startsWith("[")) {
+        if (body.startsWith(CharPool.BRACKET_START+"")) {
             JSONArray jsonArray = JSONUtil.parseArray(body);
             jsonArray.forEach(obj -> {
                 String tagValue = Optional.ofNullable(JSONUtil.getByPath(JSONUtil.parseObj(obj.toString()), jsonPath)).map(Object::toString).orElse("");
@@ -146,8 +154,7 @@ public abstract class BaseGrayAspect {
 
     /**
      * 获取当前请求
-     *
-     * @return
+     * @return 获取当前请求
      */
     protected HttpServletRequest getRequest() {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();

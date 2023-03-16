@@ -1,4 +1,4 @@
-package com.hyl.component.out_api.util;
+package com.hyl.component.api.util;
 
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ReflectUtil;
@@ -11,6 +11,10 @@ import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * @author hyl
+ */
+@SuppressWarnings("unchecked")
 public class AnnotationUtil {
     public static String getAnnotationKey(ProceedingJoinPoint joinPoint, Class keyAnnotationClass) {
         Object[] args = joinPoint.getArgs();

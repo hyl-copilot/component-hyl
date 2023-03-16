@@ -9,9 +9,10 @@ import java.util.regex.Pattern;
  * 2022-12-04 02:22
  * create by hyl
  * desc: 顺序
+ * @author hyl
  */
 @Component("orderly")
-public class OrderlyGrayRule extends GrayRule {
+public class OrderlyGrayRule extends AbstractGrayRule {
 
     private static final String REGEX_PERSEN = "/^(100|[1-9]?\\d(\\.\\d\\d?\\d?)?)%$|0$/";
 

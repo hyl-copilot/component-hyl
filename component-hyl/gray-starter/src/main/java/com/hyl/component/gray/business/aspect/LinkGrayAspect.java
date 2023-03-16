@@ -3,7 +3,7 @@ package com.hyl.component.gray.business.aspect;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.hyl.component.gray.business.annotation.LinkGray;
-import com.hyl.component.gray.business.cache.DataCache;
+import com.hyl.component.gray.business.cache.AbstractDataCache;
 import com.hyl.component.gray.config.GrayConfigProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -20,6 +20,7 @@ import java.util.Optional;
  * 2022-12-01 21:15
  * create by hyl
  * desc:
+ * @author hyl
  */
 @Slf4j
 @Aspect
@@ -28,10 +29,12 @@ import java.util.Optional;
 public class LinkGrayAspect extends BaseGrayAspect {
 
     @Autowired
-    private DataCache dataCache;
+    private AbstractDataCache dataCache;
 
 
-    // 1.定义切面
+    /**
+     * 1.定义切面
+     */
     @Pointcut("@annotation(com.hyl.component.gray.business.annotation.LinkGray)")
     public void pointCut() {
     }
