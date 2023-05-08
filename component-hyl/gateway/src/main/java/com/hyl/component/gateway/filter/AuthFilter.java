@@ -4,12 +4,13 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.hyl.component.gateway.config.GatewayConfig;
 import com.hyl.component.gateway.config.ThirdAuth;
+import com.hyl.component.gateway.constant.AuthConstant;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,7 @@ public class AuthFilter implements GlobalFilter {
 
     @Resource
     private GatewayConfig gatewayConfig;
-    @Autowired
+    @Resource
     private RedisTemplate<String, String> redisTemplate;
 
     @Override
@@ -49,11 +50,11 @@ public class AuthFilter implements GlobalFilter {
             return chain.filter(exchange);
         }
         //获取 token 和 systemCode
-        String token = request.getHeaders().getFirst("token");
+        String token = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (token != null) {
-            return checkToken(exchange, chain, request, url, token);
+            return checkToken(exchange, chain, request, token);
         }
-        String systemCode = request.getHeaders().getFirst("systemCode");
+        String systemCode = request.getHeaders().getFirst(AuthConstant.SYSTEM_CODE);
         if (systemCode != null && !"".equals(systemCode)) {
             return checkThirdAuth(exchange, chain, request, url, systemCode);
         }
@@ -66,23 +67,23 @@ public class AuthFilter implements GlobalFilter {
     /**
      * token校验
      *
-     * @param exchange
-     * @param chain
-     * @param request
-     * @param url
-     * @param token
-     * @return
+     * @param exchange 请求上下文
+     * @param chain    过滤器链
+     * @param request  请求
+     * @param token    token
+     * @return Mono<Void>
      */
-    private Mono<Void> checkToken(ServerWebExchange exchange, GatewayFilterChain chain, ServerHttpRequest request, String url, String token) {
+    @SuppressWarnings("VulnerableCodeUsages")
+    private Mono<Void> checkToken(ServerWebExchange exchange, GatewayFilterChain chain, ServerHttpRequest request, String token) {
         //根据redis中的token判断是否过期
         String userInfo = redisTemplate.opsForValue().get(token);
         if (userInfo == null) {
             log.info("token已过期");
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             JSONObject body = new JSONObject();
-            body.set("code",1);
-            body.set("msg","token已过期,请重新登录");
-            body.set("data","");
+            body.set("code", 1);
+            body.set("msg", "token已过期,请重新登录");
+            body.set("data", "");
             byte[] bytes = JSONUtil.toJsonStr(body).getBytes(StandardCharsets.UTF_8);
             DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(bytes);
             return exchange.getResponse().writeWith(Flux.just(buffer));
@@ -90,7 +91,7 @@ public class AuthFilter implements GlobalFilter {
         //未过期、请求通过
         //将用户信息放入request中
         ServerHttpRequest.Builder mutate = request.mutate();
-        mutate.header("userInfo", userInfo);
+        mutate.header(AuthConstant.USER_INFO, userInfo);
         //给token续期
         redisTemplate.expire(token, gatewayConfig.getExpireTime(), TimeUnit.SECONDS);
         return chain.filter(exchange);
@@ -99,12 +100,12 @@ public class AuthFilter implements GlobalFilter {
     /**
      * 第三方系统校验
      *
-     * @param exchange
-     * @param chain
-     * @param request
-     * @param url
-     * @param systemCode
-     * @return
+     * @param exchange   请求上下文
+     * @param chain      过滤器链
+     * @param request    请求
+     * @param url        请求url
+     * @param systemCode 第三方系统编码
+     * @return Mono<Void>
      */
     private Mono<Void> checkThirdAuth(ServerWebExchange exchange, GatewayFilterChain chain, ServerHttpRequest request, String url, String systemCode) {
         List<ThirdAuth> thirdAuthList = gatewayConfig.getThirdAuthList();
@@ -122,12 +123,12 @@ public class AuthFilter implements GlobalFilter {
         }
         ThirdAuth thirdAuth = thirdAuthMap.get(systemCode);
         //请求头中是否有密钥
-        String key = request.getHeaders().getFirst("key");
-        String secret = request.getHeaders().getFirst("secret");
+        String appKey = request.getHeaders().getFirst(AuthConstant.APP_KEY);
+        String appSecret = request.getHeaders().getFirst(AuthConstant.APP_SECRET);
         //使用Objects.equals()方法比较key和secret是否相等
-        if (!Objects.equals(key, thirdAuth.getKey()) || !Objects.equals(secret, thirdAuth.getSecret())) {
+        if (!Objects.equals(appKey, thirdAuth.getKey()) || !Objects.equals(appSecret, thirdAuth.getSecret())) {
             //校验未通过
-            log.info("第三方系统校验未通过,systemCode：{},key：{},secret：{}", systemCode, key, secret);
+            log.info("第三方系统校验未通过,systemCode：{},appKey：{},appSecret：{}", systemCode, appKey, appSecret);
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }

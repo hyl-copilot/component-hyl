@@ -1,6 +1,5 @@
 package com.hyl.component.gateway.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.context.annotation.Primary;
@@ -8,6 +7,7 @@ import org.springframework.stereotype.Component;
 import springfox.documentation.swagger.web.SwaggerResource;
 import springfox.documentation.swagger.web.SwaggerResourcesProvider;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +18,7 @@ public class ResourcesProvider implements SwaggerResourcesProvider {
     public static final String API_URI = "/v3/api-docs"; //swagger2对应的是/v2/api-docs
     @Value("${spring.application.name}")
     private String gatewayApplicationName;
-    @Autowired
+    @Resource
     private RouteLocator routeLocator;
 
     @Override

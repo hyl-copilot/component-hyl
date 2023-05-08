@@ -50,8 +50,8 @@ gateway-config:
   thirdAuthList:
     - systemCode: s001
       systemName: s001
-      key: key1
-      secret: s1
+      appKey: key1
+      appSecret: s1
       urlList:
         - /third/api/oms/test
         - /user/user/login/test
