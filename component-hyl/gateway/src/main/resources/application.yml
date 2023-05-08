@@ -1,0 +1,57 @@
+server:
+  port: 80
+spring:
+  application:
+    name: gateway
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+      config:
+        server-addr: localhost:8848
+        file-extension: yaml
+    gateway:
+      # 允许跨域请求配置
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            # 允许任何域名使用
+            allowedOrigins: "*"
+            # 允许任何头
+            allowedHeaders: "*"
+            # 允许任何方法(post、get等)
+            allowedMethods: "*"
+            # sessionid 多次访问一致
+            allowCredentials: true
+        # 允许来自所有域名(allowedOrigins)的所有请求方式(allowedMethods)发出CORS请求
+        add-to-simple-url-handler-mapping: true   # 允许来自所有域名(allowedOrigins)的所有请求方式(allowedMethods)发出CORS请求7
+      routes:
+        - id: user # 自定义路由id，必须唯一
+          uri: lb://user # lb是负载均衡（默认是轮询）的意思，后面跟的是服务名称
+          predicates:
+            - Path=/user/** # 这是路由断言；只要是以/user开头的请求就会被路由到user-service服务上
+#          filters:
+            # 请求地址添加路径前缀过滤器
+            #- PrefixPath=/user
+            # 去除路径前缀过滤器
+#            - StripPrefix=1
+#gateway 配置
+gateway-config:
+  #白名单
+  whiteList:
+    - /user/v3/api-docs
+    - /user/user/login/generate_key
+    - /user/user/login/by_password
+  #第三方授权
+  thirdAuthList:
+    - systemCode: s001
+      systemName: s001
+      key: key1
+      secret: s1
+      urlList:
+        - /third/api/oms/test
+        - /user/user/login/test

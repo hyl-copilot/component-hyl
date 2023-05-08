@@ -12,6 +12,7 @@
         <module>gray-starter</module>
         <module>common-util</module>
         <module>out-api</module>
+        <module>gateway</module>
     </modules>
 
     <properties>
@@ -32,6 +33,7 @@
         <!--  SkyWalking日志监控  -->
         <skywalking.version>8.8.0</skywalking.version>
         <hutool.version>5.8.10</hutool.version>
+        <swagger.version>3.0.0</swagger.version>
     </properties>
 
     <dependencyManagement>
