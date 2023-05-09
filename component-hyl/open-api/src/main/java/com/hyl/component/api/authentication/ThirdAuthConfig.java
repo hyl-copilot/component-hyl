@@ -11,8 +11,7 @@ import java.util.List;
 @Data
 @Configuration
 @Scope
-@ConfigurationProperties("open-api-config")
-@ConditionalOnProperty(prefix="open-api-config",name = "enable", havingValue = "true")
+@ConfigurationProperties("open-api")
 public class ThirdAuthConfig {
 
     /**

@@ -2,8 +2,10 @@ package com.hyl.component.api.authentication;
 
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.hyl.component.api.exception.AuthenticationException;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
@@ -18,7 +20,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 
@@ -28,7 +29,6 @@ import java.util.Optional;
 @Slf4j
 @Aspect
 @Component
-@ConditionalOnProperty(prefix="open-api-config",name = "enable", havingValue = "true")
 public class OpenApiAuthAspect {
 
     @Resource
@@ -54,13 +54,7 @@ public class OpenApiAuthAspect {
         String appSecret = request.getHeader(secretField);
         if (!openAuthService.auth(systemCode, appKey, appSecret)) {
             //认证不通过
-            HttpServletResponse response = getResponse();
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            JSONObject body = new JSONObject();
-            body.set("code", 1);
-            body.set("msg", "token已过期,请重新登录");
-            body.set("data", "");
-            return body;
+            throw new AuthenticationException("授权未通过");
         }
         return joinPoint.proceed();
     }

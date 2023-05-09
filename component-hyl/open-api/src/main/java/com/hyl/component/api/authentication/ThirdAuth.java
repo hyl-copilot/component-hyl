@@ -8,6 +8,6 @@ import java.util.List;
 public class ThirdAuth {
     private String systemCode;
     private String systemName;
-    private String key;
-    private String secret;
+    private String appKey;
+    private String appSecret;
 }

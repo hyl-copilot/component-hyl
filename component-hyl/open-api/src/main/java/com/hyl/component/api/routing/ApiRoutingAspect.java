@@ -1,6 +1,6 @@
 package com.hyl.component.api.routing;
 
-import com.hyl.component.api.autoconfigure.MatchConfiguration;
+import com.hyl.component.api.autoconfigure.OpenApiAutoConfiguration;
 import com.hyl.component.api.service.MatchService;
 import com.hyl.component.api.util.AnnotationUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import java.util.Objects;
 @Slf4j
 @Aspect
 @Component
-@ConditionalOnClass(MatchConfiguration.class)
+@ConditionalOnClass(OpenApiAutoConfiguration.class)
 public class ApiRoutingAspect {
 
     @Resource

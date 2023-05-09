@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * @create 2023-05-09
  *
  */
-@Target(ElementType.TYPE)
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Component
 public @interface OpenApiAuth {

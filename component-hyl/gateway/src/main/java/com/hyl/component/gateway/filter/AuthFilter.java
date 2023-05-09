@@ -126,7 +126,7 @@ public class AuthFilter implements GlobalFilter {
         String appKey = request.getHeaders().getFirst(AuthConstant.APP_KEY);
         String appSecret = request.getHeaders().getFirst(AuthConstant.APP_SECRET);
         //使用Objects.equals()方法比较key和secret是否相等
-        if (!Objects.equals(appKey, thirdAuth.getKey()) || !Objects.equals(appSecret, thirdAuth.getSecret())) {
+        if (!Objects.equals(appKey, thirdAuth.getAppKey()) || !Objects.equals(appSecret, thirdAuth.getAppSecret())) {
             //校验未通过
             log.info("第三方系统:{}校验未通过,systemCode：{},appKey：{},appSecret：{}", thirdAuth.getSystemName(), systemCode, appKey, appSecret);
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
