@@ -128,13 +128,13 @@ public class AuthFilter implements GlobalFilter {
         //使用Objects.equals()方法比较key和secret是否相等
         if (!Objects.equals(appKey, thirdAuth.getKey()) || !Objects.equals(appSecret, thirdAuth.getSecret())) {
             //校验未通过
-            log.info("第三方系统校验未通过,systemCode：{},appKey：{},appSecret：{}", systemCode, appKey, appSecret);
+            log.info("第三方系统:{}校验未通过,systemCode：{},appKey：{},appSecret：{}", thirdAuth.getSystemName(), systemCode, appKey, appSecret);
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
         if (!thirdAuth.getUrlList().contains(url)) {
             //校验未通过
-            log.info("第三方系统权限不足,systemCode：{},url：{}", systemCode, url);
+            log.info("第三方系统: {}权限不足,systemCode：{},url：{}", thirdAuth.getSystemName(), systemCode, url);
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }

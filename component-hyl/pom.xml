@@ -11,7 +11,7 @@
     <modules>
         <module>gray-starter</module>
         <module>common-util</module>
-        <module>out-api</module>
+        <module>open-api</module>
         <module>gateway</module>
     </modules>
 
