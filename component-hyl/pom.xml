@@ -13,6 +13,7 @@
         <module>common-util</module>
         <module>open-api</module>
         <module>gateway</module>
+        <module>export-center</module>
     </modules>
 
     <properties>
@@ -23,7 +24,7 @@
         <spring.cloud.alibaba.version>2.2.6.RELEASE</spring.cloud.alibaba.version>
         <spring.boot.version>2.3.2.RELEASE</spring.boot.version>
         <mysql.connector.version>8.0.27</mysql.connector.version>
-        <mybatis.plus.version>3.4.3.1</mybatis.plus.version>
+        <mybatis.plus.version>3.5.3</mybatis.plus.version>
         <alibaba.druid.version>1.2.8</alibaba.druid.version>
         <pagehelper.version>1.4.1</pagehelper.version>
         <aspectjrt.version>1.9.9.1</aspectjrt.version>
@@ -34,6 +35,7 @@
         <skywalking.version>8.8.0</skywalking.version>
         <hutool.version>5.8.10</hutool.version>
         <swagger.version>3.0.0</swagger.version>
+        <redisson.version>3.24.3</redisson.version>
     </properties>
 
     <dependencyManagement>
