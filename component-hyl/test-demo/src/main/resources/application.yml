@@ -1,5 +1,19 @@
 server:
   port: 9998
+
+logger:
+  level:
+    com.hyl: debug
+  root:
+    level: info
+    appender: console
+  loggers:
+    com.hyl:
+      level: debug
+      appender: console
+      additivity: false
+
+
 binlog:
   client: enable
   master:

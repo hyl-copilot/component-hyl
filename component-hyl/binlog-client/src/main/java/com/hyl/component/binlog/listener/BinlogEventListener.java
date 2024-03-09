@@ -17,8 +17,12 @@ public class BinlogEventListener implements BinaryLogClient.EventListener {
 
     @Override
     public void onEvent(Event event) {
-        log.debug("event:{}", event);
+        log.info("event:{}", event);
         //分发事件
-        tableRegister.dispatch(event);
+        try {
+            tableRegister.dispatch(event);
+        } catch (Exception e) {
+            log.error("dispatch event error", e);
+        }
     }
 }
