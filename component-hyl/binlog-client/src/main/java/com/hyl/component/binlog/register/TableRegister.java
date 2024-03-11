@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.github.shyiko.mysql.binlog.event.*;
 import com.hyl.component.binlog.annotation.TableEventListener;
 import com.hyl.component.binlog.annotation.TableListener;
+import com.hyl.component.binlog.dispatch.EventDispatch;
 import com.hyl.component.binlog.event.*;
 import com.hyl.component.binlog.listener.ITableListener;
 import com.hyl.component.binlog.util.TableUtil;
@@ -21,18 +22,58 @@ import java.util.Objects;
 @Slf4j
 public class TableRegister {
 
-    private final TableUtil tableUtil;
+    private final EventDispatch eventDispatch;
 
     private final Map<String, ITableListener> registerListener = new HashMap<>();
 
     private final Map<String, Map<String, EventListenerMethod>> eventListener = new HashMap<>();
 
-    private final Map<Long, TableInfo> tableMap = new HashMap<>();
-
-    public TableRegister(TableUtil tableUtil) {
-        this.tableUtil = tableUtil;
+    public TableRegister(EventDispatch eventDispatch) {
+        this.eventDispatch = eventDispatch;
     }
 
+
+    /*
+     * 从spring容器中获取所有的TableListener注解的监听器
+     */
+    public void init(ApplicationContext context) {
+        //从spring容器中获取所有的ITableListener
+        registerByITableListener(context);
+        //注册监听bean
+        registerByMethodListener(context);
+        //初始化转接器
+        eventDispatch.init(registerListener, eventListener);
+    }
+
+    private void registerByMethodListener(ApplicationContext context) {
+        Map<String, Object> beansWithAnnotation = context.getBeansWithAnnotation(TableListener.class);
+        if (MapUtil.isEmpty(beansWithAnnotation)) {
+            return;
+        }
+        for (Object listener : beansWithAnnotation.values()) {
+            TableListener annotation = listener.getClass().getAnnotation(TableListener.class);
+            String schema = annotation.schema();
+            String tableName = annotation.table_name();
+            Method[] methods = listener.getClass().getMethods();
+            for (Method method : methods) {
+                if (!method.isAnnotationPresent(TableEventListener.class)) {
+                    continue;
+                }
+                registerEvent(listener, schema + "." + tableName, method);
+            }
+        }
+    }
+
+
+    private void registerByITableListener(ApplicationContext context) {
+        Map<String, ITableListener> beansOfType = context.getBeansOfType(ITableListener.class);
+        if (MapUtil.isEmpty(beansOfType)) {
+            return;
+        }
+        for (ITableListener listener : beansOfType.values()) {
+            register(listener);
+        }
+    }
 
     //注册表监听器
     public void register(ITableListener listener) {
@@ -70,114 +111,9 @@ public class TableRegister {
     }
 
     public void dispatch(Event event) throws Exception {
-        TableInfo tableInfo;
-        EventListenerMethod method = null;
-        switch (event.getHeader().getEventType()) {
-            case TABLE_MAP:
-                TableMapEventData data = event.getData();
-                tableMap.put(data.getTableId(), buildTableInfo(data));
-                break;
-            case WRITE_ROWS:
-            case EXT_WRITE_ROWS:
-                WriteRowsEventData rowsEventData = event.getData();
-                tableInfo = tableMap.get(rowsEventData.getTableId());
-                method = getMethodListener(rowsEventData.getTableId(), MethEventType.INSERT);
-                if (method != null) {
-                    method.invoke(tableInfo, rowsEventData);
-                    break;
-                }
-                ITableListener listener = getTableListener(rowsEventData.getTableId());
-                if (listener == null) {
-                    break;
-                }
-                listener.onInsert(tableInfo, rowsEventData);
-                break;
-            case UPDATE_ROWS:
-            case EXT_UPDATE_ROWS:
-                UpdateRowsEventData updateRowsEventData = event.getData();
-                tableInfo = tableMap.get(updateRowsEventData.getTableId());
-                method = getMethodListener(updateRowsEventData.getTableId(), MethEventType.UPDATE);
-                if (method != null) {
-                    method.invoke(tableInfo, updateRowsEventData);
-                    break;
-                }
-                listener = getTableListener(updateRowsEventData.getTableId());
-                if (listener == null) {
-                    break;
-                }
-                listener.onUpdate(tableInfo, updateRowsEventData);
-                break;
-            case DELETE_ROWS:
-            case EXT_DELETE_ROWS:
-                DeleteRowsEventData deleteRowsEventData = event.getData();
-                tableInfo = tableMap.get(deleteRowsEventData.getTableId());
-                method = getMethodListener(deleteRowsEventData.getTableId(), MethEventType.DELETE);
-                if (method != null) {
-                    method.invoke(tableInfo, deleteRowsEventData);
-                    break;
-                }
-                listener = getTableListener(deleteRowsEventData.getTableId());
-                if (listener == null) {
-                    break;
-                }
-                listener.onDelete(tableInfo, deleteRowsEventData);
-                break;
-            default:
-                //log.warn("未知事件类型:{}", event.getHeader().getEventType());
-        }
+        eventDispatch.dispatch(event);
     }
 
-    private TableInfo buildTableInfo(TableMapEventData data) throws SQLException, ClassNotFoundException {
-        if (tableMap.containsKey(data.getTableId())) {
-            return tableMap.get(data.getTableId());
-        }
-        return TableInfo.builder()
-                .schema(data.getDatabase())
-                .tableName(data.getTable())
-                .columns(tableUtil.getTableColumns(data.getDatabase(), data.getTable())).build();
-    }
-
-    private EventListenerMethod getMethodListener(long tableId, String eventName) {
-        TableInfo table = tableMap.get(tableId);
-        if (Objects.isNull(table)) {
-            log.warn("未找到表名,tableId:{}", tableId);
-            throw new RuntimeException("未找到表名,tableId:" + tableId);
-        }
-
-        Map<String, EventListenerMethod> methodMap = eventListener.get(table.getFullName());
-        if (methodMap == null) {
-            return null;
-        }
-        return methodMap.get(eventName);
-    }
-
-
-    private ITableListener getTableListener(Long tableId) {
-        TableInfo table = tableMap.get(tableId);
-        if (Objects.isNull(table)) {
-            log.warn("未找到表名,tableId:{}", tableId);
-            throw new RuntimeException("未找到表名,tableId:" + tableId);
-        }
-        ITableListener listener = registerListener.get(table.getFullName());
-        if (listener == null) {
-            log.debug("未找到表名,tableName:{}", table.getFullName());
-            return null;
-        }
-        return listener;
-
-    }
-
-    private boolean isDDL(QueryEventData event) {
-        String sql = event.getSql();
-        return sql != null && sql.toLowerCase().startsWith("alter") || sql.toLowerCase().startsWith("create") || sql.toLowerCase().startsWith("drop");
-    }
-
-    private String getTableName(QueryEventData queryEventData) {
-        String schema = queryEventData.getDatabase();
-        String sql = queryEventData.getSql();
-        String[] split = sql.split(" ");
-        return schema + "." + split[split.length - 1];
-    }
 
     private String getTableName(ITableListener listener) {
         TableListener tableListener = listener.getClass().getAnnotation(TableListener.class);
@@ -194,44 +130,5 @@ public class TableRegister {
         return schema + "." + StrUtil.toUnderlineCase(listener.getClass().getSimpleName());
     }
 
-    /*
-     * 从spring容器中获取所有的TableListener注解的监听器
-     */
-    public void init(ApplicationContext context) {
-        //从spring容器中获取所有的ITableListener
-        registerByITableListener(context);
-        //注册监听bean
-        registerByMethodListener(context);
-    }
-
-    private void registerByMethodListener(ApplicationContext context) {
-        Map<String, Object> beansWithAnnotation = context.getBeansWithAnnotation(TableListener.class);
-        if (MapUtil.isEmpty(beansWithAnnotation)) {
-            return;
-        }
-        for (Object listener : beansWithAnnotation.values()) {
-            TableListener annotation = listener.getClass().getAnnotation(TableListener.class);
-            String schema = annotation.schema();
-            String tableName = annotation.table_name();
-            Method[] methods = listener.getClass().getMethods();
-            for (Method method : methods) {
-                if (!method.isAnnotationPresent(TableEventListener.class)) {
-                    continue;
-                }
-                registerEvent(listener, schema + "." + tableName, method);
-            }
-        }
-    }
-
-
-    private void registerByITableListener(ApplicationContext context) {
-        Map<String, ITableListener> beansOfType = context.getBeansOfType(ITableListener.class);
-        if (MapUtil.isEmpty(beansOfType)) {
-            return;
-        }
-        for (ITableListener listener : beansOfType.values()) {
-            register(listener);
-        }
-    }
 
 }
