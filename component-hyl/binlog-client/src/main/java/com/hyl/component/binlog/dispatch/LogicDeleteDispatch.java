@@ -85,7 +85,6 @@ public class LogicDeleteDispatch extends SimpleDispatch {
             Object enableFlagValue = row[enableFlag.getIndex() - 1];
             if (Objects.equals(enableFlagValue, 10)) {
                 //需要删除
-                log.info("deleteEvent 需要处理");
                 deleteRows.add(row);
             }
         });
@@ -96,7 +95,7 @@ public class LogicDeleteDispatch extends SimpleDispatch {
             super.deleteEvent(deleteEventData);
             return;
         }
-        log.info("deleteEvent 不需要处理");
+        log.debug("deleteEvent 不需要处理");
     }
 
 }
