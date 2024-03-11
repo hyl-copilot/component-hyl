@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
-@TableListener(table_name = "user")
+@TableListener(schema = "abc", table_name = "user")
 public class UserTableListener extends SimpleTableListener {
 
     @TableEventListener(event_type = MethEventType.INSERT)

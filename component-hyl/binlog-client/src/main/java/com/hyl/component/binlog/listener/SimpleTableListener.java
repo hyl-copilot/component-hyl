@@ -21,7 +21,7 @@ public class SimpleTableListener implements ITableListener {
      * 获取列数据
      *
      * @param tableInfo
-     * @param event
+     * @param eventRows
      */
     public JSONArray getColumns(TableInfo tableInfo, List<Serializable[]> eventRows) {
         Map<Integer, ColumnInfo> columns = tableInfo.getColumns();

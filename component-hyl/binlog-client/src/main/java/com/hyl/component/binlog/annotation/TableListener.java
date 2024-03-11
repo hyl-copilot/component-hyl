@@ -12,6 +12,8 @@ import java.lang.annotation.*;
 @Component
 public @interface TableListener {
 
-    String table_name() default "";
+    String schema();
+
+    String table_name();
 
 }

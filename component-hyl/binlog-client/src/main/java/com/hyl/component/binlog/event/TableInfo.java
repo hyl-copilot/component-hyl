@@ -15,7 +15,17 @@ import java.util.Map;
 @AllArgsConstructor
 public class TableInfo {
 
+    private String schema;
+
     private String tableName;
 
     private Map<Integer,ColumnInfo> columns;
+
+
+    /**
+     * 获取schema.table
+     */
+    public String getFullName() {
+        return schema + "." + tableName;
+    }
 }

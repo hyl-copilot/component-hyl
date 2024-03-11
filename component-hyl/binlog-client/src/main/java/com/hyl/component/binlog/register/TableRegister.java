@@ -83,14 +83,14 @@ public class TableRegister {
                 tableInfo = tableMap.get(rowsEventData.getTableId());
                 method = getMethodListener(rowsEventData.getTableId(), MethEventType.INSERT);
                 if (method != null) {
-                    method.invoke(tableInfo,rowsEventData);
+                    method.invoke(tableInfo, rowsEventData);
                     break;
                 }
                 ITableListener listener = getTableListener(rowsEventData.getTableId());
                 if (listener == null) {
                     break;
                 }
-                listener.onInsert(tableInfo,rowsEventData);
+                listener.onInsert(tableInfo, rowsEventData);
                 break;
             case UPDATE_ROWS:
             case EXT_UPDATE_ROWS:
@@ -98,14 +98,14 @@ public class TableRegister {
                 tableInfo = tableMap.get(updateRowsEventData.getTableId());
                 method = getMethodListener(updateRowsEventData.getTableId(), MethEventType.UPDATE);
                 if (method != null) {
-                    method.invoke(tableInfo,updateRowsEventData);
+                    method.invoke(tableInfo, updateRowsEventData);
                     break;
                 }
                 listener = getTableListener(updateRowsEventData.getTableId());
                 if (listener == null) {
                     break;
                 }
-                listener.onUpdate(tableInfo,updateRowsEventData);
+                listener.onUpdate(tableInfo, updateRowsEventData);
                 break;
             case DELETE_ROWS:
             case EXT_DELETE_ROWS:
@@ -113,14 +113,14 @@ public class TableRegister {
                 tableInfo = tableMap.get(deleteRowsEventData.getTableId());
                 method = getMethodListener(deleteRowsEventData.getTableId(), MethEventType.DELETE);
                 if (method != null) {
-                    method.invoke(tableInfo,deleteRowsEventData);
+                    method.invoke(tableInfo, deleteRowsEventData);
                     break;
                 }
                 listener = getTableListener(deleteRowsEventData.getTableId());
                 if (listener == null) {
                     break;
                 }
-                listener.onDelete(tableInfo,deleteRowsEventData);
+                listener.onDelete(tableInfo, deleteRowsEventData);
                 break;
             default:
                 //log.warn("未知事件类型:{}", event.getHeader().getEventType());
@@ -132,8 +132,9 @@ public class TableRegister {
             return tableMap.get(data.getTableId());
         }
         return TableInfo.builder()
+                .schema(data.getDatabase())
                 .tableName(data.getTable())
-                .columns(tableUtil.getTableColumns(data.getDatabase(),data.getTable())).build();
+                .columns(tableUtil.getTableColumns(data.getDatabase(), data.getTable())).build();
     }
 
     private EventListenerMethod getMethodListener(long tableId, String eventName) {
@@ -142,7 +143,8 @@ public class TableRegister {
             log.warn("未找到表名,tableId:{}", tableId);
             throw new RuntimeException("未找到表名,tableId:" + tableId);
         }
-        Map<String, EventListenerMethod> methodMap = eventListener.get(table.getTableName());
+
+        Map<String, EventListenerMethod> methodMap = eventListener.get(table.getFullName());
         if (methodMap == null) {
             return null;
         }
@@ -156,9 +158,9 @@ public class TableRegister {
             log.warn("未找到表名,tableId:{}", tableId);
             throw new RuntimeException("未找到表名,tableId:" + tableId);
         }
-        ITableListener listener = registerListener.get(table.getTableName());
+        ITableListener listener = registerListener.get(table.getFullName());
         if (listener == null) {
-            log.debug("未找到表名,tableName:{}", table.getTableName());
+            log.debug("未找到表名,tableName:{}", table.getFullName());
             return null;
         }
         return listener;
@@ -171,9 +173,10 @@ public class TableRegister {
     }
 
     private String getTableName(QueryEventData queryEventData) {
+        String schema = queryEventData.getDatabase();
         String sql = queryEventData.getSql();
         String[] split = sql.split(" ");
-        return split[split.length - 1];
+        return schema + "." + split[split.length - 1];
     }
 
     private String getTableName(ITableListener listener) {
@@ -182,12 +185,13 @@ public class TableRegister {
             log.warn("{}未找到TableListener注解", listener.getClass().getName());
             throw new RuntimeException(listener.getClass().getName() + "未找到TableListener注解");
         }
+        String schema = tableListener.schema();
         String tableName = tableListener.table_name();
         if (StrUtil.isNotBlank(tableName)) {
-            return tableName;
+            return schema + "." + tableName;
         }
         //类名转换为表名  驼峰转下划线
-        return StrUtil.toUnderlineCase(listener.getClass().getSimpleName());
+        return schema + "." + StrUtil.toUnderlineCase(listener.getClass().getSimpleName());
     }
 
     /*
@@ -202,18 +206,19 @@ public class TableRegister {
 
     private void registerByMethodListener(ApplicationContext context) {
         Map<String, Object> beansWithAnnotation = context.getBeansWithAnnotation(TableListener.class);
-        if (MapUtil.isEmpty(beansWithAnnotation)){
+        if (MapUtil.isEmpty(beansWithAnnotation)) {
             return;
         }
         for (Object listener : beansWithAnnotation.values()) {
             TableListener annotation = listener.getClass().getAnnotation(TableListener.class);
+            String schema = annotation.schema();
             String tableName = annotation.table_name();
             Method[] methods = listener.getClass().getMethods();
             for (Method method : methods) {
                 if (!method.isAnnotationPresent(TableEventListener.class)) {
                     continue;
                 }
-                registerEvent(listener,tableName,method);
+                registerEvent(listener, schema + "." + tableName, method);
             }
         }
     }
@@ -221,7 +226,7 @@ public class TableRegister {
 
     private void registerByITableListener(ApplicationContext context) {
         Map<String, ITableListener> beansOfType = context.getBeansOfType(ITableListener.class);
-        if (MapUtil.isEmpty(beansOfType)){
+        if (MapUtil.isEmpty(beansOfType)) {
             return;
         }
         for (ITableListener listener : beansOfType.values()) {
